@@ -43,7 +43,7 @@
 #include <SoftwareSerial.h>
 #include <SPI.h>
 #include <SD.h>
-#include "paramsIR-RUN.h"
+#include "params010001C2.h"
 
 /*The baud rate change (BRC, or "baud" for short) is
  *a digitial pin that can be used for telling the iRobot
@@ -405,7 +405,7 @@ void record() {
   //String to store data values
   String data = "";
 
-  String dataName = ROBOT + ARENA + ".txt";
+  String dataName = ID + ".txt";
   
   File datafile = SD.open(dataName, FILE_WRITE);
 
