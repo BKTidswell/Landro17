@@ -112,8 +112,8 @@ def xorFit(irVal, photoVal, aCount):
 	#Threshold values for good and bad regions
 	# does a 72% 27% bad/good spilt here, needs tuning 
 	# to get 75% 25%
-	irThres = 150
-	photoThres = 200
+	irThres = 130
+	photoThres = 225
 
 	isIRAbove = irVal > irThres
 	isPhotoAbove = photoVal > photoThres

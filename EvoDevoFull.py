@@ -137,8 +137,7 @@ def checkConds(currentLocs):
 			dist = distance(currentLocs[i][0],currentLocs[j][0],currentLocs[i][1],currentLocs[j][1])
 			combRad = currentLocs[i][2] + currentLocs[j][2]
 			if dist <= combRad:
-				if currentLocs[i][2] > currentLocs[j][2]:
-					conList.append([currentLocs[i][3],currentLocs[j][3]])
+				conList.append([currentLocs[i][3],currentLocs[j][3]])
 	return conList
 
 def processCons(devoCons, prevCons):
@@ -220,10 +219,14 @@ def makeConnectome(finalConnects,ID,gen,genome):
 
 		strength = str((genome[link[0]][3] * genome[link[0]][4] + genome[link[1]][3] * genome[link[1]][4]) / 250.0)
  
-		verbalOut = verbalOut + partTypes[genome[link[0]][0]] + " " + number + neuronNum1 + " connects to " + partTypes[genome[link[1]][0]] + " " + neuronNum2
+		verbalOut = verbalOut + partTypes[int(genome[link[0]][0])] + " " + number + neuronNum1 + " connects to " + partTypes[genome[link[1]][0]] + " " + neuronNum2
 		verbalOut = verbalOut + " with a weight of " + polarity + strength + "\n"
 
 	print verbalOut
+
+	verbalFile = open("Generation"+str(gen)+"/Genomes/verbose"+ID+".txt","w")
+	verbalFile.write(verbalOut)
+	verbalFile.close()
 
 	return makeParams(sortedConnects,ID,gen,genome)
 
@@ -305,9 +308,9 @@ def makeParams(vConnect,ID,gen,genome):
 	for con in vConnect:
 		if not con[0] in usedList:
 			if genome[con[0]][0] == 0:
-				senseToInput.append(int((genome[con[0]][1]+22.5) / 45) % 8)
+				senseToInput.append(int(((genome[con[0]][1]+22.5) / 45) % 8 )* 2)
 			if genome[con[0]][0] == 1:
-				senseToInput.append(int(genome[con[0]][1] / 45) + 8)
+				senseToInput.append(int((((genome[con[0]][1]) / 45) % 8 )* 2 + 1))
 			usedList.append(con[0])
 
 	#makes input to hidden connections
@@ -317,7 +320,7 @@ def makeParams(vConnect,ID,gen,genome):
 			if [inputIndexes[i],hiddenIndexes[j]] in vConnect:
 				sensor = genome[inputIndexes[i]] 
 				hidden = genome[hiddenIndexes[j]]
-				strength = (sensor[3] * sensor[4] + hidden[3] * hidden[4]) / 100.0
+				strength = (sensor[3] * sensor[4] + hidden[3] * hidden[4]) / 250.0
 				if (sensor[1] + 180)%360 < hidden[1]:
 					strength = strength * -1
 				perInput.append(strength)
@@ -332,7 +335,7 @@ def makeParams(vConnect,ID,gen,genome):
 			if [hiddenIndexes[i],hiddenIndexes[j]] in vConnect:
 				hidden1 = genome[hiddenIndexes[i]] 
 				hidden2 = genome[hiddenIndexes[j]]
-				strength = (hidden1[3] * hidden1[4] + hidden2[3] * hidden2[4]) / 100.0
+				strength = (hidden1[3] * hidden1[4] + hidden2[3] * hidden2[4]) / 250.0
 				if (hidden1[1] + 180)%360 < hidden2[1]:
 					strength = strength * -1
 				perHidden.append(strength)
@@ -347,7 +350,7 @@ def makeParams(vConnect,ID,gen,genome):
 			if [hiddenIndexes[i],outputIndexes[j]] in vConnect:
 				hidden = genome[hiddenIndexes[i]] 
 				output = genome[outputIndexes[j]]
-				strength = (hidden[3] * hidden[4] + output[3] * output[4]) / 100.0
+				strength = (hidden[3] * hidden[4] + output[3] * output[4]) / 250.0
 				if (hidden[1] + 180)%360 < output[1]:
 					strength = strength * -1
 				perHidden.append(strength)
@@ -362,7 +365,7 @@ def makeParams(vConnect,ID,gen,genome):
 			if [inputIndexes[i],outputIndexes[j]] in vConnect:
 				sensor = genome[inputIndexes[i]] 
 				output = genome[outputIndexes[j]]
-				strength = (sensor[3] * sensor[4] + output[3] * output[4]) / 100.0
+				strength = (sensor[3] * sensor[4] + output[3] * output[4]) / 250.0
 				if (sensor[1] + 180)%360 < output[1]:
 					strength = strength * -1
 				perInput.append(strength)
@@ -377,7 +380,7 @@ def makeParams(vConnect,ID,gen,genome):
 			if [outputIndexes[i],hiddenIndexes[j]] in vConnect:
 				output = genome[outputIndexes[i]] 
 				hidden = genome[hiddenIndexes[j]]
-				strength = (output[3] * output[4] + hidden[3] * hidden[4]) / 100.0
+				strength = (output[3] * output[4] + hidden[3] * hidden[4]) / 250.0
 				if (output[1] + 180)%360 < hidden[1]:
 					strength = strength * -1
 				perOutput.append(strength)
@@ -430,7 +433,7 @@ def makeNextGen(nextGen):
 	dataFiles = os.listdir(dirName)[1:filesNum]
 
 	sortedData = []
-	neededData = 0
+	neededData = 1
 
 	#This sorts the files so that they are accessed by their index order to make sure that the data from the runs \
 	# matches up with the genome and ID lists given. 
@@ -545,8 +548,8 @@ def xorFit(irVal, photoVal, aCount):
 	#Threshold values for good and bad regions
 	# does a 72% 27% bad/good spilt here, needs tuning 
 	# to get 75% 25%
-	irThres = 150
-	photoThres = 200
+	irThres = 130
+	photoThres = 225
 
 	isIRAbove = irVal > irThres
 	isPhotoAbove = photoVal > photoThres
@@ -641,6 +644,7 @@ def makeOffspring(indivFit,allGenomes,allIDs,gen):
 	robotArray = ["A","B","C","D"]
 	arenaArray = ["1","2"]
 
+	print allIDs
 	for i in range(0,len(numOffspring)):
 		childNumber = 0
 		while numOffspring[i] > 0:
@@ -650,6 +654,7 @@ def makeOffspring(indivFit,allGenomes,allIDs,gen):
 			#Mutates the right genome and then appends it to the list
 			newGenomes.append(dupeNmute(allGenomes[i]))
 			#Makes the new ID going Gen,Parent,Index,Robot,Arena
+			print allIDs[i][4:6]
 			newID = str(gen).zfill(2) + str(allIDs[i][4:6]).zfill(2) + str(childNumber).zfill(2) + robotVal + arenaVal
 			newIDs.append(newID)
 			#Keeps track of the number of offspring the individual has left and the index number

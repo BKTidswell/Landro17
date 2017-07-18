@@ -2,6 +2,7 @@
 
 
 # imports all the needed python libraries
+import time
 import random
 import pygame, sys
 from pygame.locals import *
@@ -34,9 +35,9 @@ gDurationMax = 100
 # 4 = Travel Time
 # 5 = Growth Rate
 # 6 = Growth Time
-# index
+# 7 = Index
 def makeGenome(nGenes):
-	genome = [[0 for x in range(8)] for y in range(numGenes)] 
+	genome = [[0 for x in range(8)] for y in range(nGenes)] 
 
 	for i in range(0,nGenes):
 		genome[i][0] = random.randint(0,4)
@@ -68,18 +69,20 @@ def runDevo(genome):
 	count = 0
 	connects = []
 
-	while count < 300:
+	while count < 225:
 		for event in pygame.event.get():
 			if event.type==QUIT:
 				pygame.quit()
 				sys.exit()
 				#print connects
 
-		processCons(devoGraphics(genome, count), connects)
-		#pygame.display.update()
+		time.sleep(0.15)
 		DISPLAY.fill((255, 255, 255))
+		connects = processCons(devoGraphics(genome, count), connects)
+		pygame.display.update()
 		count = count + 1
 
+	pygame.display.update()
 	pygame.image.save(DISPLAY, 'Devo')
 	return makeConnectome(connects)   
 
@@ -153,6 +156,7 @@ def distance(x1,x2,y1,y2):
 	return (math.sqrt((x1 - x2)**2 + (y1 - y2)**2))
 
 def checkConds(currentLocs):
+	#print currentLocs
 	conList = [] 
 
 	for i in range(0,len(currentLocs)-1):
@@ -160,12 +164,15 @@ def checkConds(currentLocs):
 			dist = distance(currentLocs[i][0],currentLocs[j][0],currentLocs[i][1],currentLocs[j][1])
 			combRad = currentLocs[i][2] + currentLocs[j][2]
 			if dist <= combRad:
-				if currentLocs[i][2] > currentLocs[j][2]:
-					conList.append([currentLocs[i][3],currentLocs[j][3]])
+				conList.append([currentLocs[i][3],currentLocs[j][3]])
+				#print [currentLocs[i][3],currentLocs[j][3]]
 	return conList
 			
 
 def processCons(devoCons, prevCons):
+	# print "some connects"
+	# print devoCons
+	# print prevCons
 	for dev in devoCons:
 		if not (dev in prevCons):
 			prevCons.append(dev)
@@ -181,6 +188,9 @@ def processCons(devoCons, prevCons):
 	# 6 = Growth Time
 
 def makeConnectome(finalConnects):
+	# print "final"
+	# print finalConnects
+	
 	sortedConnects = []
 
 	verbalOut = ""
@@ -201,8 +211,9 @@ def makeConnectome(finalConnects):
 			sortedConnects.append(finalConnects[i])
 			sortedConnects.append([finalConnects[i][1],finalConnects[i][0]])
 
-	#print "\n"
-	#print sortedConnects
+	# print "\n"
+	# print "sorted"
+	# print sortedConnects
 
 	length = len(sortedConnects)
 
@@ -337,9 +348,9 @@ def makeParams(vConnect):
 	for con in vConnect:
 		if not con[0] in usedList:
 			if genome[con[0]][0] == 0:
-				senseToInput.append(int((genome[con[0]][1]+22.5) / 45) % 8)
+				senseToInput.append(int(((genome[con[0]][1]+22.5) / 45) % 8 )* 2)
 			if genome[con[0]][0] == 1:
-				senseToInput.append(int(genome[con[0]][1] / 45) + 8)
+				senseToInput.append(int((((genome[con[0]][1]) / 45) % 8 )* 2 + 1))
 			usedList.append(con[0])
 
 	#makes input to hidden connections
@@ -349,7 +360,7 @@ def makeParams(vConnect):
 			if [inputIndexes[i],hiddenIndexes[j]] in vConnect:
 				sensor = genome[inputIndexes[i]] 
 				hidden = genome[hiddenIndexes[j]]
-				strength = (sensor[3] * sensor[4] + hidden[3] * hidden[4]) / 100.0
+				strength = (sensor[3] * sensor[4] + hidden[3] * hidden[4]) / 250.0
 				if (sensor[1] + 180)%360 < hidden[1]:
 					strength = strength * -1
 				perInput.append(strength)
@@ -364,7 +375,7 @@ def makeParams(vConnect):
 			if [hiddenIndexes[i],hiddenIndexes[j]] in vConnect:
 				hidden1 = genome[hiddenIndexes[i]] 
 				hidden2 = genome[hiddenIndexes[j]]
-				strength = (hidden1[3] * hidden1[4] + hidden2[3] * hidden2[4]) / 100.0
+				strength = (hidden1[3] * hidden1[4] + hidden2[3] * hidden2[4]) / 250.0
 				if (hidden1[1] + 180)%360 < hidden2[1]:
 					strength = strength * -1
 				perHidden.append(strength)
@@ -379,7 +390,7 @@ def makeParams(vConnect):
 			if [hiddenIndexes[i],outputIndexes[j]] in vConnect:
 				hidden = genome[hiddenIndexes[i]] 
 				output = genome[outputIndexes[j]]
-				strength = (hidden[3] * hidden[4] + output[3] * output[4]) / 100.0
+				strength = (hidden[3] * hidden[4] + output[3] * output[4]) / 250.0
 				if (hidden[1] + 180)%360 < output[1]:
 					strength = strength * -1
 				perHidden.append(strength)
@@ -394,7 +405,7 @@ def makeParams(vConnect):
 			if [inputIndexes[i],outputIndexes[j]] in vConnect:
 				sensor = genome[inputIndexes[i]] 
 				output = genome[outputIndexes[j]]
-				strength = (sensor[3] * sensor[4] + output[3] * output[4]) / 100.0
+				strength = (sensor[3] * sensor[4] + output[3] * output[4]) / 250.0
 				if (sensor[1] + 180)%360 < output[1]:
 					strength = strength * -1
 				perInput.append(strength)
@@ -409,7 +420,7 @@ def makeParams(vConnect):
 			if [outputIndexes[i],hiddenIndexes[j]] in vConnect:
 				output = genome[outputIndexes[i]] 
 				hidden = genome[hiddenIndexes[j]]
-				strength = (output[3] * output[4] + hidden[3] * hidden[4]) / 100.0
+				strength = (output[3] * output[4] + hidden[3] * hidden[4]) / 250.0
 				if (output[1] + 180)%360 < hidden[1]:
 					strength = strength * -1
 				perOutput.append(strength)
@@ -450,7 +461,7 @@ def makeParams(vConnect):
 	if 0 in [numInputs,RMILength,LMILength]:
 		return 0
 	else:
-		modul(vConnect)
+		#modul(vConnect)
 		return 1
 
 
@@ -621,8 +632,9 @@ def dupeNmute(genome):
 mean = 10
 sd = 2
 numGenes = int(numpy.random.normal(mean,sd,1))
-genome = makeGenome(numGenes)
+genome = makeGenome(6)
 #print runDevo(genome)
+#genome = [[2, 170, 97, 2, 22, 2, 80, 0], [3, 209, 74, 4, 11, 2, 65, 1], [1, 263, 71, 5, 85, 1, 19, 2], [1, 4, 48, 5, 45, 2, 91, 3], [0, 58, 12, 1, 75, 3, 66, 4], [0, 37, 11, 5, 44, 1, 82, 5]]
 print genome
 #genome = dupeNmute(genome)
 print runDevo(genome)
@@ -635,7 +647,9 @@ print runDevo(genome)
 #     for j in range(0,1000):
 #         genome = makeGenome(numGenes)
 #         viableNums[i] = viableNums[i] + runDevo(genome)
-		
+
+#[[4, 326, 49, 2, 31, 2, 20, 0], [2, 70, 73, 4, 19, 3, 85, 1], [2, 262, 89, 4, 3, 2, 8, 2], [0, 157, 32, 4, 4, 2, 72, 3], [2, 103, 69, 5, 70, 2, 17, 4], [0, 3, 33, 3, 39, 2, 89, 5]]
+
 
 # print viableNums
 
