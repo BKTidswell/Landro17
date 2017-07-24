@@ -1,18 +1,9 @@
 # Landro17
-code for landro summer 2017
-
-To run this code you will need to get some python libraries.
-I plan to trim down 2017GenomeFull but right now at least it needs a lot of them
+code for Landro summer 2017
 
 random, os, and math should already be there
 
-I used pip to install all of these, which works pretty well
-You need to get:
-	pygame
-	numpy
-	plotly
-	igraph
-	networkx
+To run EvoDevo full you should only need to download bumpy, and I would advise using pip to do that. 
 
 I am also using python version 2.7
 
