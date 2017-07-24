@@ -1,10 +1,10 @@
 # Landro17
 Code for Landro summer 2017
 
-Set Up for Running the Code:
-  random, os, and math should already be there
-  To run EvoDevo full you should only need to download numpy, and I would advise using pip to do that. 
-  I am also using python version 2.7
+* Set Up for Running the Code:
+   * random, os, and math should already be there
+   * To run EvoDevo full you should only need to download numpy, and I would advise using pip to do that. 
+   * I am also using python version 2.7
 
 What the Code Does:
   EvoDevoFull does basically what it says, it runs the evolutionary development for the entire population.
