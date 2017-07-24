@@ -26,10 +26,10 @@ Code for Landro summer 2017
    * Repeat until you have run enough generations
   
 * What Needs to Be Done:
- *  We need to finalize the number of starting individuals (Currently 5)
- *  We need to finalize the fitness function (Currently based on threshold values (Fitness/Offspring 30/1 50/2 90/3))
- *  We need to determine the starting range of connection strengths (Currently -4 to 4)
- *  We need to finalize the mutation rates (Currently 0.05 mutation and 0.05 duplication)
+ * We need to finalize the number of starting individuals (Currently 5)
+ * We need to finalize the fitness function (Currently based on threshold values (Fitness/Offspring 30/1 50/2 90/3))
+ * We need to determine the starting range of connection strengths (Currently -4 to 4)
+ * We need to finalize the mutation rates (Currently 0.05 mutation and 0.05 duplication)
 
 
 
