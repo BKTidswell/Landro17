@@ -24,6 +24,15 @@ Code for Landro summer 2017
   * Step 3: Put the datalogs in the "Data" folder of the appropriate generation
   * Step 4: Run EvoDevoFull to make the next generation
    * Repeat until you have run enough generations
+   
+* How to Run Params.h Files:
+  * Copy all of the params.h files from the appropriate generation and put them in the folder with runLandro2.ino. 
+  * Each params.h file represents a different neural netowrk and so they all must be run. 
+  * So start with the first one (it will be params####01X#.h) and then put that file name in quotes in line 46
+  * So now it should say #include "params####01X#.h" on that line, so that neural netowrk will be the one used for the run
+  * Upload the code onto the correct landro, as shown by the X in the params.h name, and then put it into the correct arena as shown by the # after the X
+  * Run Landro until it does its ending song, and then pick it up, unplug the arduino and upload the code again, changing the statement to #include "params####02X#.h"
+  * Repeat this until you have run all the params.h files and then take the data off the SD card and place those files into the "Data" folder of the generation you just ran
   
 * What Needs to Be Done:
   * We need to finalize the number of starting individuals (Currently 5)
