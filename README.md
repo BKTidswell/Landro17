@@ -20,7 +20,7 @@ Code for Landro summer 2017
 * What You Need to Do with EvoDevoFull:
   * Step 1: Run EvoDevoFull to create the first generation
   * Step 2: Run all the params.h files in Landros to get the datalogs
-            * Make sure that all the IDs on the datalogs make the params.h IDs!
+    * Make sure that all the IDs on the datalogs make the params.h IDs!
   * Step 3: Put the datalogs in the "Data" folder of the appropriate generation
   * Step 4: Run EvoDevoFull to make the next generation
    * Repeat until you have run enough generations
