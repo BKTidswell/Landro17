@@ -3,7 +3,18 @@ import numpy as np
 import random
 import math
 
+#The README on github expalins most of the functionality of the code from the user side, so this commenting
+# will be primarily for editting of the code itself. Big picture it makes folders that have all the evolutionary
+# material for privious generations and the one being currently run. For more big picture and knowing how to 
+# run and use this I would say check github
+
+#Important Varibles to change:
+# Robot Amount: In makeGenOne(), this is th enumebr of robot in the starting pop
+
 def makeGen():
+	#So this bit of code makes the file folder system where everything else is put.
+	# It determines what the most recent generation built was and makes the next one 
+	# after that. And then makes the three folders in it
 	dirDone = False
 	count = 1
 
@@ -18,6 +29,8 @@ def makeGen():
 		else:
 			count = count + 1
 
+	#If it's just the first generation it just makes the generation
+	# Otherwise it uses the last generation's data to make the current one
 	if count == 1:
 		makeGenOne()
 	else:
@@ -33,22 +46,28 @@ def makeGenOne():
 	mean = 10
 	sd = 2
 
-	for x in range(1,1+5):
+	roboAmount = 5
+
+	#This makes all IDs for the first generation
+	for x in range(0,0 + roboAmount):
 		robotVal = robotArray[random.randint(0,3)]
 		arenaVal = arenaArray[random.randint(0,1)]
+		#Makes a genome with number of genes on a normal curve
 		numGenes = int(np.random.normal(mean,sd,1))
 		genome = makeGenome(numGenes)
 		allGenomes.append(genome)
 		allIDs.append("0100"+str(x).zfill(2)+ robotVal + arenaVal)
 
+	#This writes a human readable genome and an numpy readable genome into the genomes folder
 	genomeFile = open("Generation1/Genomes/genomes.txt","w")
 	genomeFile.write(str(allGenomes))
 	allGenomes = np.asarray(allGenomes)
 	np.save("Generation1/Genomes/genomes",allGenomes)
-	print allIDs
+	#print allIDs
 
 	gen = 1
 
+	#runs the devlopment and connections for each robot in the generation
 	for i in range(0,len(allIDs)):
 		runDevo(allGenomes[i],allIDs[i],gen)
 
@@ -72,6 +91,8 @@ def makeGenome(nGenes):
 
 	genome = [[0 for x in range(8)] for y in range(nGenes)] 
 
+
+	#creates a genome
 	for i in range(0,nGenes):
 		genome[i][0] = random.randint(0,4)
 		genome[i][1] = random.randint(0,360)
@@ -86,14 +107,19 @@ def makeGenome(nGenes):
 
 def runDevo(genome,ID,gen):
 
-	# display = 750 x 650
 	count = 0
 	connects = []
 
-	while count < 500:
-		processCons(devoGraphics(genome, count), connects)
+	#no longer makes an image but just runs trhough the step processes
+	#1000 was picked with the idea that it would take a while for the devlopment
+	#time to take that long.
+	while count < 1000:
+		#ProcessCons is run on the connections found on each cycle and updates
+		#the connection list so that there are no duplicates
+		connects = processCons(devoGraphics(genome, count), connects)
 		count = count + 1
 
+	#Returns 0 if it's not viable and 1 if it is (or probably is)
 	return makeConnectome(connects,ID,gen,genome)
 
 def devoGraphics(genome, count):
@@ -108,55 +134,73 @@ def devoGraphics(genome, count):
 
 	currentList = []
 
+	#Moves it using X and Y from the center
 	for gene in genome:
+		#If we have gone past the start time of the gene then it appears
 		if gene[2] <= count:
+			#Runs based on the count
 			if gene[4]+gene[2] >= count:
 				x = int(center[0] + gene[3]*(count-gene[2])*math.cos(math.radians(gene[1])))
 				y = int(center[1] + gene[3]*(count-gene[2])*math.sin(math.radians(gene[1])))
+			#If it has run for it's full development time then it stops moving
 			else:
 				x = int(center[0] + gene[3]*gene[4]*math.cos(math.radians(gene[1])))
 				y = int(center[1] + gene[3]*gene[4]*math.sin(math.radians(gene[1])))
 
+			#Grows based on count
 			if gene[6]+gene[2] >= count:
 				size = int(1+gene[5]*(count-gene[2]))
+			#Again if it is past the growth time then it stops growing
 			else:
 				size = int(1+gene[5]*gene[6])
 
 			currentList.append([x,y,size,gene[7]])
-			
+	
+	#Checks the connections based on where all the seeds are currently
+	#Returns a list of then connections made up to this point
 	return checkConds(currentList)
 
 def distance(x1,x2,y1,y2):
+	#calcualtes distance
+	#8**2 is the same as 8^2 or 64
 	return (math.sqrt((x1 - x2)**2 + (y1 - y2)**2))
 
 def checkConds(currentLocs):
 	conList = [] 
-
 	for i in range(0,len(currentLocs)-1):
 		for j in range(i+1,len(currentLocs)):
+			#For each node it sees if it is within range of any other node by seeing if the 
+			# distance is less 
 			dist = distance(currentLocs[i][0],currentLocs[j][0],currentLocs[i][1],currentLocs[j][1])
 			combRad = currentLocs[i][2] + currentLocs[j][2]
+			#if the distance is smaller than the combined radius then these two seeds are put onto
+			# the list of connections
 			if dist <= combRad:
 				conList.append([currentLocs[i][3],currentLocs[j][3]])
 	return conList
 
 def processCons(devoCons, prevCons):
-	for dev in devoCons:
-		if not (dev in prevCons):
-			prevCons.append(dev)
+	#adds any new connections to the list and then returns the list
+	for devo in devoCons:
+		if not (devo in prevCons):
+			prevCons.append(devo)
 
 	return prevCons
 
 def makeConnectome(finalConnects,ID,gen,genome):
+	# This function takes the list of all the connections that happened and turns that into a
+	# list of legal connections in the right sorted order, and a printed verbal output 
+	# for the user to read and to be saved in the "Genomes" folder for the generation made
+
 	sortedConnects = []
 
 	verbalOut = ""
 
 	partTypes = ["IR", "Photo", "Neuron", "Right Motor", "Left Motor"]
 
-	# for gene in genome:
-	#     print partTypes[gene[0]]
-
+	#This sorts the connections by their size, so that the first index in any
+	# pair is the bigger one. Also if they are the same size in then it puts both 
+	# combinations in.
 	for i in range(0,len(finalConnects)):
 		size1 = genome[finalConnects[i][0]][5] * genome[finalConnects[i][0]][6]
 		size2 = genome[finalConnects[i][1]][5] * genome[finalConnects[i][1]][6]
@@ -168,72 +212,84 @@ def makeConnectome(finalConnects,ID,gen,genome):
 			sortedConnects.append(finalConnects[i])
 			sortedConnects.append([finalConnects[i][1],finalConnects[i][0]])
 
-	#print "\n"
-	#print sortedConnects
-
 	length = len(sortedConnects)
 
 	popList = []
 
+	#This makes a list of illegal connections to pop
 	for i in range(0,length):
+		#Nothing can connect to sensors, so if a connection has one in the second position it is out
 		if(genome[sortedConnects[i][1]][0] in [0,1]):
 			popList.append(i)
+		# Motors can't connect to to other motors, and so if there are motors on both sides then this
+		# connection will be popped
 		elif(genome[sortedConnects[i][0]][0] in [3,4] and genome[sortedConnects[i][1]][0] in [3,4]):
 			popList.append(i)
 
+	#Reverses the list so that popping the first things doesn't mess up the indexing of later things
+	# that you want to pop
 	popList = list(reversed(popList))
 
-	#print popList
-
+	#Pop things we want to remove
 	for pop in popList:
 		sortedConnects.pop(pop)
 
 	#print "\n"
-	#print sortedConnects
-
-	print "\n"
 
 	for link in sortedConnects:
+		#Makes string to fill with data to print
 		number = ""
 		neuronNum1 = ""
 		neuronNum2 = ""
 		polarity = ""
 		strength = ""
 
+		#If the first thing is an IR then its number is determined by getting the int value of the 
+		#angle + 22.5 (45/2) and the divided by 45 to find which of the 8 segemnts it is in.
 		if (genome[link[0]][0] == 0):
 			number = str(int((genome[link[0]][1]+22.5) / 45) % 8)
 
+		#Photos work bascially the same way but there isn't the 22.5 degree offset
 		elif (genome[link[0]][0] == 1):
 			number = str(int(genome[link[0]][1] / 45))
 
+		#The neuron numbers are just their index numbers, no counting
 		elif(genome[link[0]][0] == 2):
 			neuronNum1 = str(link[0])
 
 		if(genome[link[1]][0] == 2):
 			neuronNum2 = str(link[1])
 
+		#The connection strength is negative if the other seed is on the clockwise half,
+		# and positive if it's on the widdershins half
 		if((genome[link[0]][1] + 180)%360 < genome[link[1]][1]):
 			polarity = "-"
 		else:
 			polarity = "+"
 
+		#Strength is the average of the two distances travaled divided by 250 so that weights are between 0 and 4
 		strength = str((genome[link[0]][3] * genome[link[0]][4] + genome[link[1]][3] * genome[link[1]][4]) / 250.0)
- 
+ 	
+ 		#Makes the full verbal string
 		verbalOut = verbalOut + partTypes[int(genome[link[0]][0])] + " " + number + neuronNum1 + " connects to " + partTypes[genome[link[1]][0]] + " " + neuronNum2
 		verbalOut = verbalOut + " with a weight of " + polarity + strength + "\n"
 
-	print verbalOut
+	#print verbalOut
 
+	#Makes a file with the genome and the verbal output
 	verbalFile = open("Generation"+str(gen)+"/Genomes/verbose"+ID+".txt","w")
+	verbalFile.write(str(genome))
+	verbalFile.write("\n \n \n")
 	verbalFile.write(verbalOut)
 	verbalFile.close()
 
+	# This makes the params.h file and returns 1 if viable
 	return makeParams(sortedConnects,ID,gen,genome)
 
 def makeParams(vConnect,ID,gen,genome):
 	ardFile = open('Generation'+str(gen)+"/Params/"+'params'+ID+'.h','w')
 
-	#print vConnect
+	#Defines ints and arrays to hold the data for each new param.h, whihc is labeled by ID
 
 	numInputs = 0
 	numHidden = 0
@@ -258,7 +314,8 @@ def makeParams(vConnect,ID,gen,genome):
 
 	usedList = []
 
-	#Gets the number of each
+	#Gets the number of each of hidden, motors and inputs and makes sure there are no duplicates
+	# by checkignt he index numbers
 	for con in vConnect:
 		if not con[0] in usedList:
 			if genome[con[0]][0] in [0,1]:
@@ -283,8 +340,9 @@ def makeParams(vConnect,ID,gen,genome):
 	usedList = []
 
 	motorCount = 0
-	#Figures out motor indexes
-	print vConnect
+	#Figures out motor indexes and it might look off but there are
+	# secret motors who just give output and don't get it
+	# print vConnect
 	for con in vConnect:
 		if not con[1] in usedList or not con[0] in usedList:
 			if genome[con[0]][0] == 3:
@@ -304,7 +362,7 @@ def makeParams(vConnect,ID,gen,genome):
 
 	usedList = []
 
-	#Figures out which sensor gets which output
+	#Figures out which sensor gets which output which is different than their number
 	for con in vConnect:
 		if not con[0] in usedList:
 			if genome[con[0]][0] == 0:
@@ -313,10 +371,13 @@ def makeParams(vConnect,ID,gen,genome):
 				senseToInput.append(int((((genome[con[0]][1]) / 45) % 8 )* 2 + 1))
 			usedList.append(con[0])
 
-	#makes input to hidden connections
+	#makes input to hidden connections and keeps strength at -4 to 4
+	# structure is basically the same for each of these things
 	for i in range(0,numInputs):
+		#makes a list for each input
 		perInput = []
 		for j in range(0,numHidden):
+			#If there is a connection then calcualte the strength and polarity
 			if [inputIndexes[i],hiddenIndexes[j]] in vConnect:
 				sensor = genome[inputIndexes[i]] 
 				hidden = genome[hiddenIndexes[j]]
@@ -325,10 +386,11 @@ def makeParams(vConnect,ID,gen,genome):
 					strength = strength * -1
 				perInput.append(strength)
 			else:
+				#Otherwise it is a zero
 				perInput.append(0)
 		inputToHidden.append(perInput)
 
-	#makes hidden to hidden connections
+	#makes hidden to hidden connections and keeps strength at -4 to 4
 	for i in range(0,numHidden):
 		perHidden = []
 		for j in range(0,numHidden):
@@ -343,7 +405,7 @@ def makeParams(vConnect,ID,gen,genome):
 				perHidden.append(0)
 		hiddenToHidden.append(perHidden)
 
-	#makes hidden to output connections
+	#makes hidden to output connections and keeps strength at -4 to 4
 	for i in range(0,numHidden):
 		perHidden = []
 		for j in range(0,numOutput):
@@ -358,7 +420,7 @@ def makeParams(vConnect,ID,gen,genome):
 				perHidden.append(0)
 		hiddenToOutput.append(perHidden)
 
-	#makes input to output connections
+	#makes input to output connections and keeps strength at -4 to 4
 	for i in range(0,numInputs):
 		perInput = []
 		for j in range(0,numOutput):
@@ -388,6 +450,7 @@ def makeParams(vConnect,ID,gen,genome):
 				perOutput.append(0)
 		outputToHidden.append(perOutput)
 
+	#can be on robot A to D and arena 1 or 2
 	robotVal = random.randint(0,3)
 	arenaVal = random.randint(0,1)
 
@@ -396,6 +459,8 @@ def makeParams(vConnect,ID,gen,genome):
 
 	robotVal = robotArray[robotVal]
 	arenaVal = arenaArray[arenaVal]
+
+	#writes everything to the params.h file with arrays redone for Arduino C formatting
 
 	ardFile.write("String ID = " + "\""+ ID + "\"; \n")
 	ardFile.write('#define NUM_INPUT ' + str(numInputs) + " \n")
@@ -417,12 +482,16 @@ def makeParams(vConnect,ID,gen,genome):
 	ardFile.write("float input_to_output[NUM_INPUT][NUM_OUTPUT] = " + str(inputToOutput).replace('[','{').replace(']','}') + "; \n")
 	ardFile.write("float output_to_hidden[NUM_OUTPUT][NUM_HIDDEN] = " + str(outputToHidden).replace('[','{').replace(']','}') + "; \n \n \n \n")
 
+	#If there are both motors, and inputs then it is probably viable so return 1
 	if 0 in [numInputs,RMILength,LMILength]:
 		return 0
 	else:
 		return 1
 
 def makeNextGen(nextGen):
+	#Ok so this is code for making the second and onward generations
+
+	#Opens up the directory of the previous generation
 	oldGen = nextGen - 1
 	oldGenomes = np.load("Generation"+str(oldGen)+"/Genomes/genomes.npy")
 
@@ -430,6 +499,8 @@ def makeNextGen(nextGen):
 
 	filesNum = len(os.listdir(dirName))
 
+	#get all the data files. THe first is removed as it is just a directory thing here on macs,
+	# so that might need to be changed for a different system
 	dataFiles = os.listdir(dirName)[1:filesNum]
 
 	sortedData = []
@@ -445,7 +516,7 @@ def makeNextGen(nextGen):
 				dataFiles.remove(data)
 				neededData = neededData + 1
 
-	print sortedData
+	#print sortedData
 
 	allTimes = []
 	allFitnesses = []
@@ -635,7 +706,7 @@ def makeOffspring(indivFit,allGenomes,allIDs,gen):
 		else:
 			numOffspring[i] = 0
 
-	print numOffspring
+	#print numOffspring
 
 	#For storing the new generation of genomes and IDs
 	newIDs = []
@@ -644,7 +715,7 @@ def makeOffspring(indivFit,allGenomes,allIDs,gen):
 	robotArray = ["A","B","C","D"]
 	arenaArray = ["1","2"]
 
-	print allIDs
+	#print allIDs
 	for i in range(0,len(numOffspring)):
 		childNumber = 0
 		while numOffspring[i] > 0:
@@ -654,7 +725,7 @@ def makeOffspring(indivFit,allGenomes,allIDs,gen):
 			#Mutates the right genome and then appends it to the list
 			newGenomes.append(dupeNmute(allGenomes[i]))
 			#Makes the new ID going Gen,Parent,Index,Robot,Arena
-			print allIDs[i][4:6]
+			#print allIDs[i][4:6]
 			newID = str(gen).zfill(2) + str(allIDs[i][4:6]).zfill(2) + str(childNumber).zfill(2) + robotVal + arenaVal
 			newIDs.append(newID)
 			#Keeps track of the number of offspring the individual has left and the index number

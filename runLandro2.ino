@@ -43,7 +43,7 @@
 #include <SoftwareSerial.h>
 #include <SPI.h>
 #include <SD.h>
-#include "params010001C2.h"
+#include "paramsXOR719.h"
 
 /*The baud rate change (BRC, or "baud" for short) is
  *a digitial pin that can be used for telling the iRobot
@@ -129,8 +129,14 @@ int checkBumpSensors();
  * response to occur. Here we just have it turn 180 and then
  * continue moving.
  */
-//void bumpResponse();
-void getBumped(int bumpInt);
+void bumpResponse(int bumpInt);
+
+/**********************************************************/
+/*This moves Landro according to how we want to the back bump
+ * response to occur. Here we just have it turn 180 and then
+ * continue moving.
+ */
+void backBumpResponse();
 
 /**********************************************************/
 //Limits speed to a range between -500 and 500 by clipping it.
@@ -144,8 +150,8 @@ float sensorValues[numPorts];
 float sensorSD[numPorts];
 //Specify ports for L16A:
 int analogPorts[NUM_PORTS] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15};
-int bumpPin0 = 12;
-int bumpPin1 = 13;
+int backBumpLeft = 4;//12;
+int backBumpRight = 7;//13;
 int bumpRight;
 int bumpLeft;
 String softStr;
@@ -154,7 +160,7 @@ String softStr;
 int minIR = 0;
 int maxIR = 750;
 int minPhoto = 0;
-int maxPhoto = 425;
+int maxPhoto = 300;
 
 int firstTime = 0;
 bool firstRec = true;
@@ -214,14 +220,23 @@ void setup() {
     sensorValues[i] = 0;
   }
 
+  Serial3.write(140);
+    //Number 5
+  Serial3.write((byte)5);
+    //14 Notes
+  Serial3.write((byte)1);
+  Serial3.write((byte)50);
+  Serial3.write((byte)16);
 
   //  Serial3.write(148);
   //  Serial3.write(1);
   //  Serial3.write(7);
 
   //Do bumper pins
-  pinMode(bumpPin0, INPUT);
-  pinMode(bumpPin1, INPUT);
+  pinMode(backBumpLeft, INPUT);
+  pinMode(backBumpRight, INPUT);
+  digitalWrite(backBumpLeft, HIGH);
+  digitalWrite(backBumpRight, HIGH);
 
 }
 
@@ -233,9 +248,19 @@ void loop() {
   long loopTime = millis();
   //some bump controls happen here
   int bumpInt = checkBumpSensors();
+  int leftBump = digitalRead(backBumpLeft);
+  int rightBump = digitalRead(backBumpRight);
   if(bumpInt != 0){
      Serial.println("Ow!");
      bumpResponse(bumpInt);
+   }
+  else if(leftBump==0 || rightBump==0){
+     Serial.println("Ow my back!");
+     Serial.print("Left bump: ");
+     Serial.print(leftBump);
+     Serial.print("  Right bump: ");
+     Serial.println(rightBump);
+     backBumpResponse();
    }
 
   int i;
@@ -270,7 +295,9 @@ void loop() {
   Serial.println("Left Motor: " + String(motorScale(lmSpeed)) +
                  " || Right Motor: " + String(motorScale(rmSpeed)));
 
-  driveMotors(motorScale(rmSpeed), motorScale(lmSpeed));
+  //driveMotors(motorScale(rmSpeed), motorScale(lmSpeed));
+
+  driveMotors(200, 200);
 
   Serial.println("Time: " + String(millis() - loopTime));
 }
@@ -330,20 +357,26 @@ void neural_net() {
 
     //hidden from inputs
     for (i = 0; i < NUM_INPUT; i++) {
-      hidden[h] = hidden[h] + input[i] * input_to_hidden[i][h];
-      Serial.println("Input: " + String(input[i]));
-      Serial.println("Input to Hidden: " + String(input_to_hidden[i][h]));
+      if(input_to_hidden[i][h] != 0){
+        hidden[h] = hidden[h] + input[i] * input_to_hidden[i][h];
+        Serial.println("Input: " + String(input[i]));
+        Serial.println("Input to Hidden: " + String(input_to_hidden[i][h]));
+      }
     }
     //Update hidden nodes using hidden (last) values) from time t-1
     for (p = 0; p < NUM_HIDDEN; p++) {
-      hidden[h] = hidden[h] + old_hidden[p] * hidden_to_hidden[p][h];
-      Serial.println("Old Hidden: " + String(old_hidden[p]));
-      Serial.println("Hidden to Hidden: " + String(hidden_to_hidden[p][h]));
+      if(hidden_to_hidden[p][h] != 0){
+        hidden[h] = hidden[h] + old_hidden[p] * hidden_to_hidden[p][h];
+        Serial.println("Old Hidden: " + String(old_hidden[p]));
+        Serial.println("Hidden to Hidden: " + String(hidden_to_hidden[p][h]));
+      }
     }
 
     //Update hidden based on old motor vals
     for(o = 0; o < NUM_OUTPUT; o++){
-      hidden[h] = hidden[h] + old_output[o] * output_to_hidden[o][h];
+      if(output_to_hidden[o][h] != 0){
+        hidden[h] = hidden[h] + old_output[o] * output_to_hidden[o][h];
+      }
     }
 
     Serial.println("Hidden: " + String(hidden[h]));
@@ -360,14 +393,18 @@ void neural_net() {
     output[o] = 0;
     
     for (i = 0; i < NUM_INPUT; i++) {
-      output[o] = output[o] + input[i] * input_to_output[i][o];
-      Serial.println("Input: " + String(input[i]));
-      Serial.println("Connect: " + String(input_to_output[i][o]));
+      if (input_to_output[i][o] != 0){
+        output[o] = output[o] + input[i] * input_to_output[i][o];
+        Serial.println("Input: " + String(input[i]));
+        Serial.println("Connect: " + String(input_to_output[i][o]));
+      }
     }
     
     //Update output (motor) nodes based on hidden nodes
     for (h = 0; h < NUM_HIDDEN; h++) {
-      output[o] = output[o] + hidden[h] * hidden_to_output[h][o];
+      if(hidden_to_output[h][o] != 0){
+        output[o] = output[o] + hidden[h] * hidden_to_output[h][o];
+      }
     }
     Serial.println("Output: " + String(output[o]));
 
@@ -564,6 +601,24 @@ void bumpResponse(int bumpInt){
     driveMotors(400, -400);
     delay(300);
   }
+  Serial3.write(141);
+  Serial3.write((byte)5);
+  delay(170);
+}
+
+/**************************************************************/
+// If the back bumpers are bumped, move away from the wall
+
+void backBumpResponse(){
+  int leftBump = digitalRead(backBumpLeft);
+  int rightBump = digitalRead(backBumpRight);
+  
+  if(leftBump==0){
+    driveMotors(400,-400);
+  }
+  else if(rightBump==0){
+    driveMotors(-400,400);
+  }
   delay(200);
 }
 
@@ -589,17 +644,46 @@ void endTest() {
   while (true) {
     driveMotors(0, 0);
     Serial3.write(140);
-    //Number 0
+    //Number 1
     Serial3.write((byte)1);
-    //5 Notes
-    Serial3.write((byte)6);
+    //14 Notes
+    Serial3.write((byte)14);
+   //lE,sG,lE,sG,sE,sD,llA,
+    //lD,sE,lD,sE,sD,sC,llG
+    int eigth = 16;
+    int quarter = 32;
     
-    playGSharp();
-    playA();
-    playGSharp();
-    playE();
-    playGSharp();
-    playC();
+    Serial3.write((byte)76);
+    Serial3.write((byte)quarter);
+    Serial3.write((byte)79);
+    Serial3.write((byte)eigth);
+    Serial3.write((byte)76);
+    Serial3.write((byte)quarter);
+    Serial3.write((byte)79);
+    Serial3.write((byte)eigth);
+
+    Serial3.write((byte)76);
+    Serial3.write((byte)eigth);
+    Serial3.write((byte)74);
+    Serial3.write((byte)eigth);
+    Serial3.write((byte)69);
+    Serial3.write((byte)eigth + quarter);
+
+    Serial3.write((byte)74);
+    Serial3.write((byte)quarter);
+    Serial3.write((byte)76);
+    Serial3.write((byte)eigth);
+    Serial3.write((byte)74);
+    Serial3.write((byte)quarter);
+    Serial3.write((byte)76);
+    Serial3.write((byte)eigth);
+
+    Serial3.write((byte)74);
+    Serial3.write((byte)eigth);
+    Serial3.write((byte)72);
+    Serial3.write((byte)eigth);
+    Serial3.write((byte)67);
+    Serial3.write((byte)eigth + quarter);
     
     //play the song
     Serial3.write(141);
