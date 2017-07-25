@@ -2,6 +2,11 @@
 Code for Landro summer 2017
 
 * Intitial Set Up for Running the Code:
+   * First you need to download EvoDevoFull.py and runLandro2.ino
+      * Click on EvoDevoFull.py in the github, then click on the raw button, so the page just shows the code
+      * Then right click on the page and select "Save As" and save it as a python script
+      * Click on runLandro2.ino in the github, then click on the raw button, so the page just shows the code
+      * Then right click on the page and select "Save As", remove the ".txt" ending, and save it as "All Files"
    * Open up terminal on your Mac and type "python", it should show that you have version 2.7 or above
      * If you do not refer to the bottom for a guide to installing python 2.7
    * EvoDevoFull requires a python package that is not included with the default python package
