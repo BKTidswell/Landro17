@@ -36,9 +36,15 @@ Code for Landro summer 2017
   
 * What Needs to Be Done:
   * We need to finalize the number of starting individuals (Currently 5)
-  * We need to finalize the fitness function (Currently based on threshold values (Fitness/Offspring 30/1 50/2 90/3))
+  * We need to finalize the reporduction rules (Currently based on threshold values (Fitness/Offspring 30/1 50/2 90/3))
   * We need to determine the starting range of connection strengths (Currently -4 to 4)
   * We need to finalize the mutation rates (Currently 0.05 mutation and 0.05 duplication)
+  * We need to determine what velocities, growth rates, and and times we want for development (5,3, and 100 currently)
+  * We need to finalize fitness function (Currently no wiring cost or build cost, just the additive and multiplicative XOR fitness)
+
+* What We Have Decided:
+  * For number of genes we will have a mean of 10 and a standard deviation of 2 so that the mean is 50% viable
+
 
 
 
