@@ -8,8 +8,8 @@ Code for Landro summer 2017
      * This package  is called "numpy", and to get it you will need to get a program called "pip" that lets you download python packages
      * Numpy is used to store genomic information in a form that is easier for EvoDevoFull to read and store between generations
      * First you need to download pip:
-        * To do this open up terminal and type "python easy_install pip"
-            * If this does not work try "sudo python easy_install pip" and then type your password to complete the installation
+        * To do this open up terminal and type "easy_install pip"
+            * If this does not work try "sudo easy_install pip" and then type your password to complete the installation
      * Next you need to install numpy:
         * To do this open up terminal and type "pip install numpy"
             * If this does not work try "sudo pip install numpy" and then type your password to complete the installation
