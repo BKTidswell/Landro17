@@ -150,6 +150,8 @@ float sensorValues[numPorts];
 float sensorSD[numPorts];
 //Specify ports for L16A:
 int analogPorts[NUM_PORTS] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15};
+
+//Delcares the bumperPort numbers and values stored
 int backBumpLeft = 4;//12;
 int backBumpRight = 7;//13;
 int bumpRight;
@@ -160,13 +162,10 @@ String softStr;
 int minIR = 0;
 int maxIR = 750;
 int minPhoto = 0;
-int maxPhoto = 300;
+int maxPhoto = 450;
 
 int firstTime = 0;
 bool firstRec = true;
-
-float preRMSPD = random(0,500);
-float preLMSPD = random(0,500);
 
 //https://cdn-shop.adafruit.com/datasheets/create_2_Open_Interface_Spec.pdf
 /**********************************************************/
@@ -269,17 +268,8 @@ void loop() {
   record();
   neural_net();
 
-  //driveMotors(50,50);
-
   float rmSpeed; //= preRMSPD + 0.25 * random(-250,250);
   float lmSpeed;// = preLMSPD + 0.25 * random(-250,250);
-
-//  if(rmSpeed < 0){
-//    rmSpeed = 0;
-//  }
-//  if(lmSpeed < 0){
-//    rmSpeed = 0;
-//  }
 
   for(i = 0; i < RMILength; i++){
     rmSpeed += output[RMI[i]];
@@ -289,15 +279,10 @@ void loop() {
     lmSpeed += output[LMI[i]];
   }
 
- // float preRMSPD = rmSpeed;
- // float preLMSPD = lmSpeed;
-
   Serial.println("Left Motor: " + String(motorScale(lmSpeed)) +
                  " || Right Motor: " + String(motorScale(rmSpeed)));
 
-  //driveMotors(motorScale(rmSpeed), motorScale(lmSpeed));
-
-  driveMotors(200, 200);
+  driveMotors(motorScale(rmSpeed), motorScale(lmSpeed));
 
   Serial.println("Time: " + String(millis() - loopTime));
 }
@@ -599,11 +584,11 @@ void bumpResponse(int bumpInt){
   }
   else if(bumpInt == 3){
     driveMotors(400, -400);
-    delay(300);
+    delay(200);
   }
   Serial3.write(141);
-  Serial3.write((byte)5);
-  delay(170);
+  Serial3.write(5);
+  delay(200);
 }
 
 /**************************************************************/
@@ -628,11 +613,11 @@ void backBumpResponse(){
  * is no need to have an explicit return value.
  */
 int checkSpeed(int &spd) {
-  if (spd > 500) {
-    spd = 500;
+  if (spd > 400) {
+    spd = 400;
   }
-  else if (spd < -500) {
-    spd = -500;
+  else if (spd < -400) {
+    spd = -400;
   }
 }
 

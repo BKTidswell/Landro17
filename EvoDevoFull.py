@@ -9,7 +9,7 @@ import math
 # run and use this I would say check github
 
 #Important Varibles to change:
-# Robot Amount: In makeGenOne(), this is th enumebr of robot in the starting pop
+# Robot Amount: In makeGenOne(), this is the number of robot in the starting pop
 
 def makeGen():
 	#So this bit of code makes the file folder system where everything else is put.
@@ -75,10 +75,10 @@ def makeGenOne():
 def makeGenome(nGenes):
 	maxSpawn = 100
 	vMax = 5
-	vDurationMin = 1
+	vDurationMin = 0
 	vDurationMax = 100
 	gMax = 3
-	gDurationMin = 1
+	gDurationMin = 0
 	gDurationMax = 100
 	# 0 = Part Type (0 = IR, 1 = Photo, 2 = Neuron, 3 = R Motor, 4 = L Motor)
 	# 1 = Angle
@@ -128,7 +128,6 @@ def devoGraphics(genome, count):
 
 	irPointList = []
 	photoPointList = []
-	pointRad = 3
 
 	genePosList = []
 
@@ -271,6 +270,9 @@ def makeConnectome(finalConnects,ID,gen,genome):
 		strength = str((genome[link[0]][3] * genome[link[0]][4] + genome[link[1]][3] * genome[link[1]][4]) / 250.0)
  	
  		#Makes the full verbal string
+ 		#print genome
+ 		#print int(genome[link[0]][0])
+ 		#print link[0]
 		verbalOut = verbalOut + partTypes[int(genome[link[0]][0])] + " " + number + neuronNum1 + " connects to " + partTypes[genome[link[1]][0]] + " " + neuronNum2
 		verbalOut = verbalOut + " with a weight of " + polarity + strength + "\n"
 
@@ -680,6 +682,8 @@ def dupeNmute(genome):
 					gene[i] = gene[i] + gene[i]*changePercent
 				else:
 					gene[i] = gene[i] - gene[i]*changePercent
+				if i == 1:
+					gene[i] = gene[i]%360
 	
 	#Give the new genes the right kind of ID numbers
 	for i in range(0,len(newGenome)):
@@ -734,8 +738,8 @@ def makeOffspring(indivFit,allGenomes,allIDs,gen):
 
 	genomeFile = open("Generation"+str(gen)+"/Genomes/genomes.txt","w")
 	genomeFile.write(str(newGenomes))
-	newGenomes = np.asarray(newGenomes)
-	np.save("Generation"+str(gen)+"/Genomes/genomes",newGenomes)
+	npNewGenomes = np.asarray(newGenomes)
+	np.save("Generation"+str(gen)+"/Genomes/genomes",npNewGenomes)
 
 	for i in range(0,len(newIDs)):
 		runDevo(newGenomes[i],newIDs[i],gen)
