@@ -36,6 +36,8 @@ def makeGen():
 	else:
 		makeNextGen(count)
 
+	return count
+
 def makeGenOne():
 	allGenomes = []
 	allIDs = []
@@ -744,6 +746,19 @@ def makeOffspring(indivFit,allGenomes,allIDs,gen):
 	for i in range(0,len(newIDs)):
 		runDevo(newGenomes[i],newIDs[i],gen)
 
-makeGen()
+genNumb = makeGen()
+dataPath = "Generation"+str(genNumb-1)+"/Data/"
+numbData = len(os.listdir(dataPath))
+if numbData > 1:
+	print "Successfully Created Generation " + str(genNumb)
+else:
+	print "Please Add Datalogs to " + dataPath
+	os.rmdir("Generation"+str(genNumb)+"/Data/")
+	os.rmdir("Generation"+str(genNumb)+"/Params/")
+	os.remove("Generation"+str(genNumb)+"/Genomes/genomes.npy")
+	os.remove("Generation"+str(genNumb)+"/Genomes/genomes.txt")
+	os.rmdir("Generation"+str(genNumb)+"/Genomes/")
+	os.rmdir("Generation"+str(genNumb))
+
 
 
