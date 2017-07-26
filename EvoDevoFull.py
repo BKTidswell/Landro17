@@ -48,7 +48,7 @@ def makeGenOne():
 	mean = 10
 	sd = 2
 
-	roboAmount = 5
+	roboAmount = 30
 
 	#This makes all IDs for the first generation
 	for x in range(0,0 + roboAmount):
@@ -348,11 +348,17 @@ def makeParams(vConnect,ID,gen,genome):
 	# secret motors who just give output and don't get it
 	# print vConnect
 	for con in vConnect:
-		if not con[1] in usedList or not con[0] in usedList:
+		if not con[0] in usedList:
 			if genome[con[0]][0] == 3:
+				RMILength = RMILength + 1
+				RMI.append(motorCount)
 				motorCount = motorCount + 1
 			if genome[con[0]][0] == 4:
-				motorCount = motorCount + 1		
+				LMILength = LMILength + 1
+				LMI.append(motorCount)
+				motorCount = motorCount + 1
+			usedList.append(con[0])
+		if not con[1] in usedList:
 			if genome[con[1]][0] == 3:
 				RMILength = RMILength + 1
 				RMI.append(motorCount)
@@ -361,7 +367,6 @@ def makeParams(vConnect,ID,gen,genome):
 				LMILength = LMILength + 1
 				LMI.append(motorCount)
 				motorCount = motorCount + 1
-			usedList.append(con[0])
 			usedList.append(con[1])
 
 	usedList = []
