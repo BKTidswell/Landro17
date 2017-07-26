@@ -7,25 +7,26 @@ Code for Landro summer 2017
       * Then right click on the page and select "Save As" and save it as a python script
       * Click on runLandro2.ino in the github, then click on the raw button, so the page just shows the code
       * Then right click on the page and select "Save As", remove the ".txt" ending, and save it as "All Files"
-   * Open up terminal on your Mac and type "python", it should show that you have version 2.7 or above
+   * Open up terminal on your Mac by going to the little magnifiying glass in the upper right corner and typing "terminal", then selecting the application that comes up.
+   * In ther terminal type "python" and then press enter to run that line, it should show that you have version 2.7 or above, saying something like "Python 2.7.10". Then type and run "quit()" to get out of the python area of code.
      * If you do not refer to the bottom for a guide to installing python 2.7
    * EvoDevoFull requires a python package that is not included with the default python package
      * This package  is called "numpy", and to get it you will need to get a program called "pip" that lets you download python packages
      * Numpy is used to store genomic information in a form that is easier for EvoDevoFull to read and store between generations
      * First you need to download pip:
-        * To do this open up terminal and type "easy_install pip"
-            * If this does not work try "sudo easy_install pip" and then type your password to complete the installation
+        * To do this open up terminal and type "easy_install pip" then press enter to run this code. You should see some text like "All directories installed correctly"
+            * If this does not work try "sudo easy_install pip" instead and then type your password when prompted to complete the installation
      * Next you need to install numpy:
-        * To do this open up terminal and type "pip install numpy"
-            * If this does not work try "sudo pip install numpy" and then type your password to complete the installation
-        * To test that this worked type "python" into a terminal window and then type "import numpy", if there are no errors then the installation worked
+        * To do this open up terminal and type "pip install numpy" then press enter to run this code.
+            * If this does not work try "sudo pip install numpy" instead and then type your password when prompted to complete the installation
+        * To test that this worked type and run "python" in the terminal window and then type and run "import numpy", if there are no errors then the installation worked. Now type and run "quit()" to get back to basic terminal, and out of python.
   * Now create a folder on your Desktop called "Landro2017" and place EvoDevoFull.py in that folder
     * The folder does not have to be named that exactly, but whatever you call it you must remember, as you will need to type the name to run EvoDevoFull
 
 * What the Code Does:
-  * EvoDevoFull does basically what it says, it runs the evolutionary development for the entire population.
+  * EvoDevoFull runs the evolutionary development for the entire population and for all generations, placing the information you need in a set of labeled folders.
   
-  * For the first generation it creates a file system labeled "Generation1"
+  * When run the first time EvoDevoFull creates a file system labeled "Generation1"
       * This folder has three folders in it labeled "Data", "Genomes", and "Params":
            * The "Params" folder contains all the params.h files for each neural network and are labeled by ID. The params.h files contain a string labled ID so that the datalog produced by that robot will be named by that network's ID
            * The "Genomes" folder contains a numpy array file so that the program can easily read and retrive the genome between generations. It also contains the human readable collection of all genomes, and a collection of ID'd genomes with a verbal output that dictates which nodes connect to what for the network
@@ -36,18 +37,19 @@ Code for Landro summer 2017
    
 * What You Need to Do with EvoDevoFull:
   * Step 1: Run EvoDevoFull to create the first generation.
-    * To run EvoDevoFull type "cd /Desktop/Landro2017" and then after that runs type "python EvoDevoFull.py".
+    * To run EvoDevoFull type and run "cd Desktop/Landro2017/" and then after that runs type and run "python EvoDevoFull.py".
       * If you did not call the folder "Landro2017" please replace that with what you did name the folder
   * Step 2: Run all the params.h files in Landros to get the datalogs.
-    * See Section on how to run params.h files for details.
-    * Make sure that all the IDs on the datalogs make the params.h IDs!
+    * See Section on how to run params.h files for details on how to run them.
+    * Also make sure that all the IDs on the datalogs match the params.h IDs!
   * Step 3: Put the datalogs in the "Data" folder of the appropriate generation.
   * Step 4: Run EvoDevoFull to make the next generation.
     * It is run the same way as in Step 1.
    * Repeat until you have run enough generations.
    
 * How to Run Params.h Files:
-  * Copy all of the params.h files from the appropriate generation and put them in the folder with runLandro2.ino. 
+  * Copy all of the params.h files from the appropriate generation and put them in the folder with runLandro2.ino.
+     * runLandro2.ino wil create a folder around itself when run for the first time, or you can create a folder named "runLandro2" and put runLandro2.ino in it with the different params.h files.
   * Each params.h file represents a different neural netowrk and so they all must be run. 
   * So start with the first one (it will be params####01X#.h) and then put that filename in quotes in line 46.
     * So now it should say #include "params####01X#.h" on that line, so that that neural network will be the one used for the run.
