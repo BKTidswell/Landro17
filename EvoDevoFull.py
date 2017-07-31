@@ -2,6 +2,9 @@ import os
 import numpy as np
 import random
 import math
+import plotly
+import plotly.plotly as py
+import plotly.graph_objs as go
 
 #The README on github expalins most of the functionality of the code from the user side, so this commenting
 # will be primarily for editting of the code itself. Big picture it makes folders that have all the evolutionary
@@ -285,8 +288,14 @@ def makeConnectome(finalConnects,ID,gen,genome):
  		#print genome
  		#print int(genome[link[0]][0])
  		#print link[0]
-		verbalOut = verbalOut + partTypes[int(genome[link[0]][0])] + " " + motorNum1 + number + neuronNum1 + " connects to " 
-		verbalOut = verbalOut + partTypes[int(genome[link[1]][0])] + " " + motorNum2 + neuronNum2 + " with a weight of " + polarity + strength + "\n"
+		if genome[link[0]][0] in [2,3,4]:
+			firstSTR = str(genome[link[0]][7])
+		else:
+			firstSTR = ""
+
+		verbalOut = verbalOut + partTypes[genome[link[0]][0]] + " " + firstSTR + number + " connects to " 
+		verbalOut = verbalOut + partTypes[genome[link[1]][0]] + " " + str(genome[link[1]][7]) +  " with a weight of " + polarity + strength + "\n"
+
 
 	#print verbalOut
 
@@ -523,7 +532,7 @@ def makeNextGen(nextGen):
 	dataFiles = os.listdir(dirName)[1:filesNum]
 
 	sortedData = []
-	neededData = 1
+	neededData = 0
 
 	#This sorts the files so that they are accessed by their index order to make sure that the data from the runs \
 	# matches up with the genome and ID lists given. 
@@ -565,6 +574,54 @@ def makeNextGen(nextGen):
 		#Return the highest fitness for each, as fitness is fitness at each time step
 		indivFit.append(fitness[-1])
 		f.close()
+
+	lines = []
+
+	colors = [['#8db2ef', '#0061ff', '#0061ff','#8db2ef'],
+			  ['#ffa8a8', '#ff0000', '#ff0000','#ffa8a8'],
+			  ['#aaf4a8', '#18e514', '#18e514','#aaf4a8'],
+			  ['#f8f99a', '#f5f900', '#f5f900','#f8f99a'],
+			  ['#f9d199', '#ff9400', '#ff9400','#f9d199'],
+			  ['#adfff5', '#00ffe1', '#00ffe1','#adfff5'],
+			  ['#f99ae2', '#ff00bf', '#ff00bf','#f99ae2'],
+			  ['#df96ff', '#b200ff', '#b200ff','#df96ff'],
+			  ['#ccc1c1', '#000000', '#000000','#ccc1c1'],
+			  ['#629b60', '#088403', '#088403','#629b60'],
+			  ['#8db2ef', '#0061ff', '#0061ff','#8db2ef'],
+			  ['#8db2ef', '#0061ff', '#0061ff','#8db2ef'],
+			  ['#ffa8a8', '#ff0000', '#ff0000','#ffa8a8'],
+			  ['#aaf4a8', '#18e514', '#18e514','#aaf4a8'],
+			  ['#f8f99a', '#f5f900', '#f5f900','#f8f99a'],
+			  ['#f9d199', '#ff9400', '#ff9400','#f9d199'],
+			  ['#adfff5', '#00ffe1', '#00ffe1','#adfff5'],
+			  ['#f99ae2', '#ff00bf', '#ff00bf','#f99ae2'],
+			  ['#df96ff', '#b200ff', '#b200ff','#df96ff'],
+			  ['#ccc1c1', '#000000', '#000000','#ccc1c1'],
+			  ['#629b60', '#088403', '#088403','#629b60'],
+			  ['#8db2ef', '#0061ff', '#0061ff','#8db2ef'],
+			  ['#8db2ef', '#0061ff', '#0061ff','#8db2ef'],
+			  ['#ffa8a8', '#ff0000', '#ff0000','#ffa8a8'],
+			  ['#aaf4a8', '#18e514', '#18e514','#aaf4a8'],
+			  ['#f8f99a', '#f5f900', '#f5f900','#f8f99a'],
+			  ['#f9d199', '#ff9400', '#ff9400','#f9d199'],
+			  ['#adfff5', '#00ffe1', '#00ffe1','#adfff5'],
+			  ['#f99ae2', '#ff00bf', '#ff00bf','#f99ae2'],
+			  ['#df96ff', '#b200ff', '#b200ff','#df96ff'],
+			  ['#ccc1c1', '#000000', '#000000','#ccc1c1'],
+			  ['#629b60', '#088403', '#088403','#629b60'],
+			  ['#8db2ef', '#0061ff', '#0061ff','#8db2ef']]
+
+	for i in range(0,len(allFitnesses)):
+		lines.append(go.Scatter(
+						y = allFitnesses[i],
+						x = allTimes[i],
+						mode = 'lines',
+						name = 'Robot ' + str(i),
+						line = dict(
+			        		color = colors[i][1],
+			        		width = 4)))
+
+	plotly.offline.plot({"data":lines}, filename ='linePlot.html')
 
 	makeOffspring(indivFit,oldGenomes,sortedData,nextGen)
 
@@ -631,6 +688,11 @@ def calcFit(dArray,lineCount):
 
 		fitTrack.append(multipFit)
 
+	# print areaCount
+	# print prop1
+	# print prop2
+	# print fitTrack[-1]
+
 	return fitTrack
 
 def xorFit(irVal, photoVal, aCount):
@@ -638,8 +700,8 @@ def xorFit(irVal, photoVal, aCount):
 	#Threshold values for good and bad regions
 	# does a 72% 27% bad/good spilt here, needs tuning 
 	# to get 75% 25%
-	irThres = 130
-	photoThres = 225
+	irThres = 131.3
+	photoThres = 177.8
 
 	isIRAbove = irVal > irThres
 	isPhotoAbove = photoVal > photoThres
@@ -670,26 +732,23 @@ def dupeNmute(genome):
 
 	firstDupe = True
 
-	#Adds two to the new genome if you get a duplication
-	#Adds nothing if there is a deletion
-
 	for gene in genome:
 		if random.random() <= dupeRate:
 			newGenome.append(list(gene))
 			newGenome.append(list(gene))
-			#This makes it so having a second duplication after you already had one is more likely
 			if firstDupe:
-				dupeRate = 0.5
-				firstDupe = False
+				dupeRate = 1
 			else:
-				dupeRate = dupeRate/2
+				dupeRate = dupeRate
 		else:
-			dupeRate = 0.05
-			firstDupe = True
-		if random.random() > delRate:
 			newGenome.append(list(gene))
+			dupeRate = 0.05
+			firstDupe = False
 
-	#This is the mutation part of the code. The change percent may need to be updated.
+	for gene in newGenome:
+		if random.random() <= delRate:
+			newGenome.pop(newGenome.index(gene))
+
 	for gene in newGenome:
 		for i in range(0,7):
 			if random.random() <= muteRate:
@@ -699,10 +758,7 @@ def dupeNmute(genome):
 					gene[i] = gene[i] + gene[i]*changePercent
 				else:
 					gene[i] = gene[i] - gene[i]*changePercent
-				if i == 1:
-					gene[i] = gene[i]%360
 	
-	#Give the new genes the right kind of ID numbers
 	for i in range(0,len(newGenome)):
 		newGenome[i][7] = i
 
@@ -710,23 +766,13 @@ def dupeNmute(genome):
 
 def makeOffspring(indivFit,allGenomes,allIDs,gen):
 	#These are the values that determine how many offspring you get
-	minOneOff = 30
-	minTwoOff = 50
-	minThreeOff = 90
 
 	numOffspring = np.zeros(len(indivFit))
 
 	#So this function and array record how many offspring each individual got
 	for i in range(0,len(indivFit)):
-		if indivFit[i] >= minOneOff and indivFit[i] < minTwoOff:
-			numOffspring[i] = 1
-		elif indivFit[i] >= minTwoOff and indivFit[i] < minThreeOff:
-			numOffspring[i] = 2
-		elif indivFit[i] >= minThreeOff:
-			numOffspring[i] = 3
-		else:
-			numOffspring[i] = 0
-
+		numOffspring[i] = fitFunc(indivFit[i],len(allGenomes))
+		
 	#print numOffspring
 
 	#For storing the new generation of genomes and IDs
@@ -760,6 +806,28 @@ def makeOffspring(indivFit,allGenomes,allIDs,gen):
 
 	for i in range(0,len(newIDs)):
 		runDevo(newGenomes[i],newIDs[i],gen)
+
+
+def fitFunc(fit,popSize):
+	base = 0.3
+	highChance = 0.5
+	mod = popSize
+	if fit < 20+mod and random.random() < base:
+		return 1
+	elif fit >= 20+mod and fit < 30+mod and random.random() < (base + 0.1):
+		return 1
+	elif fit >= 30+mod and fit < 40+mod and random.random() < (base + 0.2):
+		return 1
+	# elif fit >= 40 and fit < 50 and random.random() < (base + 0.3):
+	# 	return 1
+	elif fit >= 40+mod and fit < 70+mod:
+		return 1
+	# elif fit >= 80 and random.random() < highChance:
+	# 	return 2
+	elif fit >= 70+mod:
+		return 2
+	else:
+		return 0
 
 genNumb = makeGen()
 if genNumb != 1:
