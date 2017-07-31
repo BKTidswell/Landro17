@@ -813,7 +813,7 @@ def makeOffspring(indivFit,allGenomes,allIDs,gen):
 
 	#print allIDs
 	for i in range(0,len(numOffspring)):
-		childNumber = 0
+		childNumber = 1
 		while numOffspring[i] > 0:
 			#These two say whihc robot and in whihc area this individual is run
 			robotVal = robotArray[random.randint(0,3)]
