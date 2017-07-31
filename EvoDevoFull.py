@@ -11,8 +11,28 @@ import plotly.graph_objs as go
 # material for privious generations and the one being currently run. For more big picture and knowing how to 
 # run and use this I would say check github
 
-#Important Varibles to change:
-# Robot Amount: In makeGenOne(), this is the number of robot in the starting pop
+#Important Varibles to Change:
+# roboAmount: In makeGenOne(), this is the number of robot in the starting pop
+# runTime: In runDevo() this says how long it runs for and should be high enough as for the starting gen
+#		   things can run for a max of 200 steps, but if it mutated too high this coudl be an issues
+# strenDivide: In makeConnectome() and makeParams(). It needs to be the same value in both places and sets
+#   		   what the max connection weight can be, which is basically 1000/strenDivide for the starting
+#              generation. Currently set to 250. 
+# irThres: Sets the threshold for being above or below the IR value for the XOR. Based on the 75/25 split now. 
+#          In xorFit() if you need to change it. 
+# photoThres: Sets the threshold for being above or below the Photo value for the XOR. Based on the 75/25 split now
+#             In xorFit() if you need to change it. 
+# dupeRate: This is the rate of duplication per gene in the genome. In dupeNmute()
+# secondDupe: This is the rate of duplication per gene in the genome after one duplication already occured. 
+#             In dupeNmute().
+# muteRate: This is the mutation rate per item in each gene in the genome, so it checked for each item 
+#			individually. In dupeNmute().
+# delRate: This is the rate of deletion per gene. In dupeNmute().
+# changePercent: This is in dupeNmute() and shows the percent change in values. So if the delay time is 
+#				 50 and this is .15 then the new value would be 50*1.15 or 57.5
+# 
+# In makeGenome() there are a bunch of values that specify the max values for the specifics of the gene values
+# and you can change them if you decide that they need tweaking 
 
 def makeGen():
 	#So this bit of code makes the file folder system where everything else is put.
@@ -120,7 +140,8 @@ def runDevo(genome,ID,gen):
 	#no longer makes an image but just runs trhough the step processes
 	#1000 was picked with the idea that it would take a while for the devlopment
 	#time to take that long.
-	while count < 1000:
+	runTime = 1000
+	while count < runTime:
 		#ProcessCons is run on the connections found on each cycle and updates
 		#the connection list so that there are no duplicates
 		connects = processCons(devoGraphics(genome, count), connects)
@@ -204,6 +225,8 @@ def makeConnectome(finalConnects,ID,gen,genome):
 
 	partTypes = ["IR", "Photo", "Neuron", "Right Motor", "Left Motor"]
 
+	strenDivide = 250.0
+
 	#This sorts the connections by their size, so that the first index in any
 	# pair is the bigger one. Also if they are the same size in then it puts both 
 	# combinations in.
@@ -282,7 +305,7 @@ def makeConnectome(finalConnects,ID,gen,genome):
 			motorNum2 = str(genome[link[1]][7])
 
 		#Strength is the average of the two distances travaled divided by 250 so that weights are between 0 and 4
-		strength = str((genome[link[0]][3] * genome[link[0]][4] + genome[link[1]][3] * genome[link[1]][4]) / 250.0)
+		strength = str((genome[link[0]][3] * genome[link[0]][4] + genome[link[1]][3] * genome[link[1]][4]) / strenDivide)
  	
  		#Makes the full verbal string
  		#print genome
@@ -313,6 +336,8 @@ def makeParams(vConnect,ID,gen,genome):
 	ardFile = open('Generation'+str(gen)+"/Params/"+'params'+ID+'.h','w')
 
 	#Defines ints and arrays to hold the data for each new param.h, whihc is labeled by ID
+
+	strenDivide = 250.0
 
 	numInputs = 0
 	numHidden = 0
@@ -409,7 +434,7 @@ def makeParams(vConnect,ID,gen,genome):
 			if [inputIndexes[i],hiddenIndexes[j]] in vConnect:
 				sensor = genome[inputIndexes[i]] 
 				hidden = genome[hiddenIndexes[j]]
-				strength = (sensor[3] * sensor[4] + hidden[3] * hidden[4]) / 250.0
+				strength = (sensor[3] * sensor[4] + hidden[3] * hidden[4]) / strenDivide
 				if (sensor[1] + 180)%360 < hidden[1]:
 					strength = strength * -1
 				perInput.append(strength)
@@ -425,7 +450,7 @@ def makeParams(vConnect,ID,gen,genome):
 			if [hiddenIndexes[i],hiddenIndexes[j]] in vConnect:
 				hidden1 = genome[hiddenIndexes[i]] 
 				hidden2 = genome[hiddenIndexes[j]]
-				strength = (hidden1[3] * hidden1[4] + hidden2[3] * hidden2[4]) / 250.0
+				strength = (hidden1[3] * hidden1[4] + hidden2[3] * hidden2[4]) / strenDivide
 				if (hidden1[1] + 180)%360 < hidden2[1]:
 					strength = strength * -1
 				perHidden.append(strength)
@@ -440,7 +465,7 @@ def makeParams(vConnect,ID,gen,genome):
 			if [hiddenIndexes[i],outputIndexes[j]] in vConnect:
 				hidden = genome[hiddenIndexes[i]] 
 				output = genome[outputIndexes[j]]
-				strength = (hidden[3] * hidden[4] + output[3] * output[4]) / 250.0
+				strength = (hidden[3] * hidden[4] + output[3] * output[4]) / strenDivide
 				if (hidden[1] + 180)%360 < output[1]:
 					strength = strength * -1
 				perHidden.append(strength)
@@ -455,7 +480,7 @@ def makeParams(vConnect,ID,gen,genome):
 			if [inputIndexes[i],outputIndexes[j]] in vConnect:
 				sensor = genome[inputIndexes[i]] 
 				output = genome[outputIndexes[j]]
-				strength = (sensor[3] * sensor[4] + output[3] * output[4]) / 250.0
+				strength = (sensor[3] * sensor[4] + output[3] * output[4]) / strenDivide
 				if (sensor[1] + 180)%360 < output[1]:
 					strength = strength * -1
 				perInput.append(strength)
@@ -470,7 +495,7 @@ def makeParams(vConnect,ID,gen,genome):
 			if [outputIndexes[i],hiddenIndexes[j]] in vConnect:
 				output = genome[outputIndexes[i]] 
 				hidden = genome[hiddenIndexes[j]]
-				strength = (output[3] * output[4] + hidden[3] * hidden[4]) / 250.0
+				strength = (output[3] * output[4] + hidden[3] * hidden[4]) / strenDivide
 				if (output[1] + 180)%360 < hidden[1]:
 					strength = strength * -1
 				perOutput.append(strength)
@@ -727,6 +752,7 @@ def dupeNmute(genome):
 	muteRate = 0.05
 	delRate = 0.01
 	changePercent = 0.15
+	secondDupe = 0.5
 
 	newGenome = []
 
@@ -737,9 +763,9 @@ def dupeNmute(genome):
 			newGenome.append(list(gene))
 			newGenome.append(list(gene))
 			if firstDupe:
-				dupeRate = 1
+				dupeRate = secondDupe
 			else:
-				dupeRate = dupeRate
+				dupeRate = dupeRate/2
 		else:
 			newGenome.append(list(gene))
 			dupeRate = 0.05
