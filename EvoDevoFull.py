@@ -2,9 +2,6 @@ import os
 import numpy as np
 import random
 import math
-import plotly
-import plotly.plotly as py
-import plotly.graph_objs as go
 
 #The README on github expalins most of the functionality of the code from the user side, so this commenting
 # will be primarily for editting of the code itself. Big picture it makes folders that have all the evolutionary
@@ -71,7 +68,7 @@ def makeGenOne():
 	mean = 10
 	sd = 2
 
-	roboAmount = 50
+	roboAmount = 20
 
 	#This makes all IDs for the first generation
 	for x in range(1,1 + roboAmount):
@@ -96,40 +93,40 @@ def makeGenOne():
 
 	#runs the devlopment and connections for each robot in the generation
 	for i in range(0,len(allIDs)):
-		print i
 		runDevo(allGenomes[i],allIDs[i],gen)
 
 
 def makeGenome(nGenes):
 	maxSpawn = 100
-	vMax = 5
-	vDurationMin = 0
+	maxgSpawn = 100
+	vMax = 100
 	vDurationMax = 100
-	gMax = 3
-	gDurationMin = 0
+	gMax = 100
 	gDurationMax = 100
+	maxAngle = 360
+
 	# 0 = Part Type (0 = IR, 1 = Photo, 2 = Neuron, 3 = R Motor, 4 = L Motor)
 	# 1 = Angle
-	# 2 = Start Time
+	# 2 = Spawn Time
 	# 3 = Velocity
 	# 4 = Travel Time
-	# 5 = Growth Rate
-	# 6 = Growth Time
-	# 7 = Index
+	# 5 = Start Growth Time
+	# 6 = Growth Rate 
+	# 7 = Growth Time
+	# 8 = Index
 
-	genome = [[0 for x in range(8)] for y in range(nGenes)] 
+	genome = [[0 for x in range(9)] for y in range(nGenes)] 
 
-
-	#creates a genome
 	for i in range(0,nGenes):
 		genome[i][0] = random.randint(0,4)
-		genome[i][1] = random.randint(0,360)
+		genome[i][1] = random.randint(0,maxAngle)
 		genome[i][2] = random.randint(0,maxSpawn)
-		genome[i][3] = random.randint(1,vMax)
-		genome[i][4] = random.randint(vDurationMin,vDurationMax)
-		genome[i][5] = random.randint(1,gMax)
-		genome[i][6] = random.randint(gDurationMin,gDurationMax)
-		genome[i][7] = i
+		genome[i][3] = random.randint(0,vMax)
+		genome[i][4] = random.randint(0,vDurationMax)
+		genome[i][5] = random.randint(0,maxgSpawn)
+		genome[i][6] = random.randint(1,gMax)
+		genome[i][7] = random.randint(1,gDurationMax)
+		genome[i][8] = i
 
 	return genome
 
@@ -153,7 +150,7 @@ def runDevo(genome,ID,gen):
 
 def devoGraphics(genome, count):
 
-	center = [375,325]
+	center = [500,500]
 
 	irPointList = []
 	photoPointList = []
@@ -164,25 +161,27 @@ def devoGraphics(genome, count):
 
 	#Moves it using X and Y from the center
 	for gene in genome:
-		#If we have gone past the start time of the gene then it appears
 		if gene[2] <= count:
 			#Runs based on the count
 			if gene[4]+gene[2] >= count:
-				x = int(center[0] + gene[3]*(count-gene[2])*math.cos(math.radians(gene[1])))
-				y = int(center[1] + gene[3]*(count-gene[2])*math.sin(math.radians(gene[1])))
+				x = center[0] + gene[3]*(count-gene[2])*math.cos(math.radians(gene[1]))
+				y = center[1] + gene[3]*(count-gene[2])*math.sin(math.radians(gene[1]))
 			#If it has run for it's full development time then it stops moving
 			else:
-				x = int(center[0] + gene[3]*gene[4]*math.cos(math.radians(gene[1])))
-				y = int(center[1] + gene[3]*gene[4]*math.sin(math.radians(gene[1])))
+				x = center[0] + gene[3]*gene[4]*math.cos(math.radians(gene[1]))
+				y = center[1] + gene[3]*gene[4]*math.sin(math.radians(gene[1]))
 
-			#Grows based on count
-			if gene[6]+gene[2] >= count:
-				size = int(1+gene[5]*(count-gene[2]))
+		#Grows based on count if the growth delay has passed
+		if gene[2] + gene[5] <= count:
+			if gene[7]+gene[5]+gene[2] >= count:
+					size = 1+gene[6]*(count-gene[2]-gene[5])
 			#Again if it is past the growth time then it stops growing
 			else:
-				size = int(1+gene[5]*gene[6])
+				size = 1+gene[6]*gene[7]
 
-			currentList.append([x,y,size,gene[7]])
+		#Only adds it to the list if it has moved and has a size
+		if gene[2] <= count and gene[2] + gene[5] <= count:
+			currentList.append([x,y,size,gene[8]])
 	
 	#Checks the connections based on where all the seeds are currently
 	#Returns a list of then connections made up to this point
@@ -232,8 +231,8 @@ def makeConnectome(finalConnects,ID,gen,genome):
 	# pair is the bigger one. Also if they are the same size in then it puts both 
 	# combinations in.
 	for i in range(0,len(finalConnects)):
-		size1 = genome[finalConnects[i][0]][5] * genome[finalConnects[i][0]][6]
-		size2 = genome[finalConnects[i][1]][5] * genome[finalConnects[i][1]][6]
+		size1 = genome[finalConnects[i][0]][6] * genome[finalConnects[i][0]][7]
+		size2 = genome[finalConnects[i][1]][6] * genome[finalConnects[i][1]][7]
 		if size1 > size2:
 			sortedConnects.append(finalConnects[i])
 		elif size2 > size1:
@@ -300,10 +299,10 @@ def makeConnectome(finalConnects,ID,gen,genome):
 			polarity = "+"
 
 		if genome[link[0]][0] in [3,4]:
-			motorNum1 = str(genome[link[0]][7])
+			motorNum1 = str(genome[link[0]][8])
 
 		if genome[link[1]][0] in [3,4]:
-			motorNum2 = str(genome[link[1]][7])
+			motorNum2 = str(genome[link[1]][8])
 
 		#Strength is the average of the two distances travaled divided by 250 so that weights are between 0 and 4
 		strength = str((genome[link[0]][3] * genome[link[0]][4] + genome[link[1]][3] * genome[link[1]][4]) / strenDivide)
@@ -313,12 +312,12 @@ def makeConnectome(finalConnects,ID,gen,genome):
  		#print int(genome[link[0]][0])
  		#print link[0]
 		if genome[link[0]][0] in [2,3,4]:
-			firstSTR = str(genome[link[0]][7])
+			firstSTR = str(genome[link[0]][8])
 		else:
 			firstSTR = ""
 
 		verbalOut = verbalOut + partTypes[genome[link[0]][0]] + " " + firstSTR + number + " connects to " 
-		verbalOut = verbalOut + partTypes[genome[link[1]][0]] + " " + str(genome[link[1]][7]) +  " with a weight of " + polarity + strength + "\n"
+		verbalOut = verbalOut + partTypes[genome[link[1]][0]] + " " + str(genome[link[1]][8]) +  " with a weight of " + polarity + strength + "\n"
 
 
 	#print verbalOut
@@ -603,54 +602,6 @@ def makeNextGen(nextGen):
 		indivFit.append(fitness[-1])
 		f.close()
 
-	lines = []
-
-	colors = [['#8db2ef', '#0061ff', '#0061ff','#8db2ef'],
-			  ['#ffa8a8', '#ff0000', '#ff0000','#ffa8a8'],
-			  ['#aaf4a8', '#18e514', '#18e514','#aaf4a8'],
-			  ['#f8f99a', '#f5f900', '#f5f900','#f8f99a'],
-			  ['#f9d199', '#ff9400', '#ff9400','#f9d199'],
-			  ['#adfff5', '#00ffe1', '#00ffe1','#adfff5'],
-			  ['#f99ae2', '#ff00bf', '#ff00bf','#f99ae2'],
-			  ['#df96ff', '#b200ff', '#b200ff','#df96ff'],
-			  ['#ccc1c1', '#000000', '#000000','#ccc1c1'],
-			  ['#629b60', '#088403', '#088403','#629b60'],
-			  ['#8db2ef', '#0061ff', '#0061ff','#8db2ef'],
-			  ['#8db2ef', '#0061ff', '#0061ff','#8db2ef'],
-			  ['#ffa8a8', '#ff0000', '#ff0000','#ffa8a8'],
-			  ['#aaf4a8', '#18e514', '#18e514','#aaf4a8'],
-			  ['#f8f99a', '#f5f900', '#f5f900','#f8f99a'],
-			  ['#f9d199', '#ff9400', '#ff9400','#f9d199'],
-			  ['#adfff5', '#00ffe1', '#00ffe1','#adfff5'],
-			  ['#f99ae2', '#ff00bf', '#ff00bf','#f99ae2'],
-			  ['#df96ff', '#b200ff', '#b200ff','#df96ff'],
-			  ['#ccc1c1', '#000000', '#000000','#ccc1c1'],
-			  ['#629b60', '#088403', '#088403','#629b60'],
-			  ['#8db2ef', '#0061ff', '#0061ff','#8db2ef'],
-			  ['#8db2ef', '#0061ff', '#0061ff','#8db2ef'],
-			  ['#ffa8a8', '#ff0000', '#ff0000','#ffa8a8'],
-			  ['#aaf4a8', '#18e514', '#18e514','#aaf4a8'],
-			  ['#f8f99a', '#f5f900', '#f5f900','#f8f99a'],
-			  ['#f9d199', '#ff9400', '#ff9400','#f9d199'],
-			  ['#adfff5', '#00ffe1', '#00ffe1','#adfff5'],
-			  ['#f99ae2', '#ff00bf', '#ff00bf','#f99ae2'],
-			  ['#df96ff', '#b200ff', '#b200ff','#df96ff'],
-			  ['#ccc1c1', '#000000', '#000000','#ccc1c1'],
-			  ['#629b60', '#088403', '#088403','#629b60'],
-			  ['#8db2ef', '#0061ff', '#0061ff','#8db2ef']]
-
-	for i in range(0,len(allFitnesses)):
-		lines.append(go.Scatter(
-						y = allFitnesses[i],
-						x = allTimes[i],
-						mode = 'lines',
-						name = 'Robot ' + str(i),
-						line = dict(
-			        		color = colors[i][1],
-			        		width = 4)))
-
-	plotly.offline.plot({"data":lines}, filename ='linePlot.html')
-
 	makeOffspring(indivFit,oldGenomes,sortedData,nextGen)
 
 def processFile(f):
@@ -716,6 +667,8 @@ def calcFit(dArray,lineCount):
 
 		fitTrack.append(multipFit)
 
+	#print fitTrack[-1]
+
 	# print areaCount
 	# print prop1
 	# print prop2
@@ -726,10 +679,9 @@ def calcFit(dArray,lineCount):
 def xorFit(irVal, photoVal, aCount):
 	#IR was 90, photo was 200
 	#Threshold values for good and bad regions
-	# does a 72% 27% bad/good spilt here, needs tuning 
-	# to get 75% 25%
-	irThres = 131.3
-	photoThres = 177.8
+	# does a 43% 57% bad/good spilt here, but each good bad area is the same
+	irThres = 49
+	photoThres = 126
 
 	isIRAbove = irVal > irThres
 	isPhotoAbove = photoVal > photoThres
@@ -754,8 +706,10 @@ def dupeNmute(genome):
 	dupeRate = 0.05
 	muteRate = 0.05
 	delRate = 0.01
-	changePercent = 0.15
 	secondDupe = 0.5
+
+	angleRange = 360
+	processRange = 100
 
 	newGenome = []
 
@@ -783,10 +737,11 @@ def dupeNmute(genome):
 			if random.random() <= muteRate:
 				if i == 0:
 					gene[i] = random.randint(0,4)
-				elif random.random() > 0.5:
-					gene[i] = gene[i] + gene[i]*changePercent
+				elif i == 1:
+					gene[i] = random.randrange(0,angleRange)
 				else:
-					gene[i] = gene[i] - gene[i]*changePercent
+					gene[i] = random.randrange(0,processRange)
+
 	
 	for i in range(0,len(newGenome)):
 		newGenome[i][7] = i
@@ -802,8 +757,6 @@ def makeOffspring(indivFit,allGenomes,allIDs,gen):
 	for i in range(0,len(indivFit)):
 		numOffspring[i] = fitFunc(indivFit[i],len(allGenomes))
 		
-	#print numOffspring
-
 	#For storing the new generation of genomes and IDs
 	newIDs = []
 	newGenomes = []
@@ -811,7 +764,7 @@ def makeOffspring(indivFit,allGenomes,allIDs,gen):
 	robotArray = ["A","B","C","D"]
 	arenaArray = ["1","2"]
 
-	#print allIDs
+
 	for i in range(0,len(numOffspring)):
 		childNumber = 1
 		while numOffspring[i] > 0:
@@ -857,6 +810,7 @@ def fitFunc(fit,popSize):
 		return 2
 	else:
 		return 0
+
 
 genNumb = makeGen()
 if genNumb != 1:
