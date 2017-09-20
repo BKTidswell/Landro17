@@ -13,8 +13,8 @@ import math
 # runTime: In runDevo() this says how long it runs for and should be high enough as for the starting gen
 #		   things can run for a max of 200 steps, but if it mutated too high this coudl be an issues
 # strenDivide: In makeConnectome() and makeParams(). It needs to be the same value in both places and sets
-#   		   what the max connection weight can be, which is basically 1000/strenDivide for the starting
-#              generation. Currently set to 250. 
+#   		   what the max connection weight can be, which is basically 20000/strenDivide for the starting
+#              generation. Currently set to 5000. 
 # irThres: Sets the threshold for being above or below the IR value for the XOR. Based on the 75/25 split now. 
 #          In xorFit() if you need to change it. 
 # photoThres: Sets the threshold for being above or below the Photo value for the XOR. Based on the 75/25 split now
@@ -225,7 +225,7 @@ def makeConnectome(finalConnects,ID,gen,genome):
 
 	partTypes = ["IR", "Photo", "Neuron", "Right Motor", "Left Motor"]
 
-	strenDivide = 250.0
+	strenDivide = 5000.0
 
 	#This sorts the connections by their size, so that the first index in any
 	# pair is the bigger one. Also if they are the same size in then it puts both 
@@ -339,7 +339,7 @@ def makeParams(vConnect,ID,gen,genome):
 
 	#Defines ints and arrays to hold the data for each new param.h, whihc is labeled by ID
 
-	strenDivide = 250.0
+	strenDivide = 5000.0
 
 	numInputs = 0
 	numHidden = 0
